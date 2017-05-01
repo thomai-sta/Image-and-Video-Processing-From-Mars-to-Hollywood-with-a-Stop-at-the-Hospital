@@ -10,8 +10,77 @@ QUANT =double([16 11 10 16 24  40  51  61
   72 92 95 98 112 100 103 99]);
 
 
-img = double(imread(filename));
+img = (imread(filename));
 
+fun_dct2 = @(x) dct2(x.data);
+img_dct = blockproc(img, [8 8], fun_dct2);
+
+%% JPEG TABLE
+fun_quantize = @(x) floor(x.data ./ QUANT) .* QUANT;
+img_jpeg = blockproc(img_dct, [8 8], fun_quantize);
+
+fun_idct2 = @(x) idct2(x.data);
+img_jpeg = blockproc(img_jpeg, [8 8], fun_idct2);
+
+img_jpeg = img_jpeg / max(max(img_jpeg));
+
+imshowpair(img, img_jpeg, 'montage')
+title('JPEG Quantization table')
+
+%% N
+fun_quantize = @(x) floor(x.data ./ N) .* N;
+img_jpeg_N = blockproc(img_dct, [8 8], fun_quantize);
+
+fun_idct2 = @(x) idct2(x.data);
+img_jpeg_N = blockproc(img_jpeg_N, [8 8], fun_idct2);
+
+img_jpeg_N = img_jpeg_N / max(max(img_jpeg_N));
+
+figure
+imshowpair(img, img_jpeg_N, 'montage')
+title('JPEG N Quantization')
+
+%% 2N
+fun_quantize = @(x) floor(x.data ./ (2 * N)) .* (2 * N);
+img_jpeg_2N = blockproc(img_dct, [8 8], fun_quantize);
+
+fun_idct2 = @(x) idct2(x.data);
+img_jpeg_2N = blockproc(img_jpeg_2N, [8 8], fun_idct2);
+
+img_jpeg_2N = img_jpeg_2N / max(max(img_jpeg_2N));
+
+figure
+imshowpair(img, img_jpeg_2N, 'montage')
+title('JPEG 2N Quantization')
+
+
+%% 6N
+fun_quantize = @(x) floor(x.data ./ (6 * N)) .* (6 * N);
+img_jpeg_6N = blockproc(img_dct, [8 8], fun_quantize);
+
+fun_idct2 = @(x) idct2(x.data);
+img_jpeg_6N = blockproc(img_jpeg_6N, [8 8], fun_idct2);
+
+img_jpeg_6N = img_jpeg_6N / max(max(img_jpeg_6N));
+
+figure
+imshowpair(img, img_jpeg_6N, 'montage')
+title('JPEG 6N Quantization')
+
+%% 10N
+fun_quantize = @(x) floor(x.data ./ (10 * N)) .* (10 * N);
+img_jpeg_10N = blockproc(img_dct, [8 8], fun_quantize);
+
+fun_idct2 = @(x) idct2(x.data);
+img_jpeg_10N = blockproc(img_jpeg_10N, [8 8], fun_idct2);
+
+img_jpeg_10N = img_jpeg_10N / max(max(img_jpeg_10N));
+
+figure
+imshowpair(img, img_jpeg_10N, 'montage')
+title('JPEG 6N Quantization')
+
+%% 8 largest DCT coeff
 [rows, cols] = size(img);
 
 row_dim = 8 * ones(1, floor(rows / 8));
@@ -29,88 +98,6 @@ end
 blocks = mat2cell(img, row_dim, col_dim);
 blocks_jpeg = cell(size(blocks));
 
-%% JPEG TABLE
-
-for i = 1:length(row_dim)
-  for j = 1:length(col_dim)
-    temp = dct2(blocks{i, j});
-    temp = floor(temp ./ QUANT) .* QUANT;
-    blocks_jpeg{i, j} = idct2(temp);
-  end
-end
-
-img_jpeg = cell2mat(blocks_jpeg);
-img_jpeg = img_jpeg / max(max(img_jpeg));
-
-imshowpair(img, img_jpeg, 'montage')
-title('JPEG Quantization table')
-
-%% N
-for i = 1:length(row_dim)
-  for j = 1:length(col_dim)
-    temp = dct2(blocks{i, j});
-    temp = floor(temp / N) .* N;
-    blocks_jpeg{i, j} = idct2(temp);
-  end
-end
-
-img_jpeg_N = cell2mat(blocks_jpeg);
-img_jpeg_N = img_jpeg_N / max(max(img_jpeg_N));
-
-figure
-imshowpair(img, img_jpeg_N, 'montage')
-title('JPEG N Quantization')
-
-%% 2N
-for i = 1:length(row_dim)
-  for j = 1:length(col_dim)
-    temp = dct2(blocks{i, j});
-    temp = floor(temp / (2 * N)) .* (2 * N);
-    blocks_jpeg{i, j} = idct2(temp);
-  end
-end
-
-img_jpeg_2N = cell2mat(blocks_jpeg);
-img_jpeg_2N = img_jpeg_2N / max(max(img_jpeg_2N));
-
-figure
-imshowpair(img, img_jpeg_2N, 'montage')
-title('JPEG 2N Quantization')
-
-
-%% 6N
-for i = 1:length(row_dim)
-  for j = 1:length(col_dim)
-    temp = dct2(blocks{i, j});
-    temp = floor(temp / (6 * N)) .* (6 * N);
-    blocks_jpeg{i, j} = idct2(temp);
-  end
-end
-
-img_jpeg_6N = cell2mat(blocks_jpeg);
-img_jpeg_6N = img_jpeg_6N / max(max(img_jpeg_6N));
-
-figure
-imshowpair(img, img_jpeg_6N, 'montage')
-title('JPEG 6N Quantization')
-
-%% 10N
-for i = 1:length(row_dim)
-  for j = 1:length(col_dim)
-    temp = dct2(blocks{i, j});
-    temp = floor(temp / (10 * N)) .* (10 * N);
-    blocks_jpeg{i, j} = idct2(temp);
-  end
-end
-
-img_jpeg_10N = cell2mat(blocks_jpeg);
-img_jpeg_10N = img_jpeg_10N / max(max(img_jpeg_10N));
-
-figure
-imshowpair(img, img_jpeg_10N, 'montage')
-title('JPEG 10N Quantization')
-
-%% 8 largest DCT coeff
 for i = 1:length(row_dim)
   for j = 1:length(col_dim)
     temp = dct2(blocks{i, j});
